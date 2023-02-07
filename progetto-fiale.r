@@ -17,6 +17,7 @@ library(glmnet)
 # Set del seme per evitare risultati diversi in run successivi
 set.seed(100)
 
+# https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset
 WW<-read.csv(file.choose(), sep=",", header=TRUE)
 dim(WW)
 describe(WW)
