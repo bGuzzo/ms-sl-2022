@@ -1,10 +1,51 @@
-################# Note & Open Point ################# 
+################# Descrizione DataSet ################# 
 
-# Nota: per semplicità non cotrolliamo la presenza di outlier in tutte le colonne
-# Open Point: controllare outliers su tutti i regressori? 
-# Open Point: Inserire istogramma dei regressori? 
-# Open Point: fare il confronto tra RR e Lasso?
-# Open Point: omettere i grafici sull'MSE in funzione della complessità e altre porve fatte dal prof (e da noi nell secondo progetto)?
+# age: The person’s age in years
+
+# sex: The person’s sex (1 = male, 0 = female)
+
+# cp: chest pain type
+#	  - Value 0: asymptomatic
+#	  - Value 1: atypical angina
+#	  - Value 2: non-anginal pain
+#	  - Value 3: typical angina
+
+# trestbps: The person’s resting blood pressure (mm Hg on admission to the hospital)
+
+# chol: The person’s cholesterol measurement in mg/dl
+
+# fbs: The person’s fasting blood sugar (> 120 mg/dl, 1 = true; 0 = false)
+
+# restecg: resting electrocardiographic results
+#	  - Value 0: showing probable or definite left ventricular hypertrophy by Estes’ criteria
+#	  - Value 1: normal
+#	  - Value 2: having ST-T wave abnormality (T wave inversions and/or ST elevation or depression of > 0.05 mV)
+
+# thalach: The person’s maximum heart rate achieved
+
+# exang: Exercise induced angina (1 = yes; 0 = no)
+
+# oldpeak: ST depression induced by exercise relative to rest (‘ST’ relates to positions on the ECG plot. See more here)
+
+# slope: the slope of the peak exercise ST segment 
+#   - Value 0: downsloping
+#   - Value 1: flat
+#   - Value 2: upsloping
+
+# caa: The number of major vessels
+#   - Value 0: No free hearth vessels
+#   - Value 1: One free hearth vessel
+#   - Value 2: Two free hearth vessels
+#   - Value 3: Three free hearth vessels
+#   - Value 4: All free hearth vessels
+
+# thal: A blood disorder called Thalassemia
+#   - Value 0: NULL (dropped from the dataset previously)
+#	  - Value 1: fixed defect (no blood flow in some part of the heart)
+#	  - Value 2: normal blood flow
+#	  - Value 3: reversible defect (a blood flow is observed but it is not normal)
+
+# target: Heart disease (1 = no, 0= yes)
 
 ################# Script ################# 
 
@@ -19,227 +60,356 @@ library(ggpubr)
 # Set del seme per evitare risultati diversi in run successivi
 set.seed(100)
 
-# https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-data set
-WW<-read.csv(file.choose(), sep=",", header=TRUE)
-dim(WW)
-describe(WW)
-head(WW)
+# https://DataSetw.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-data set
+path<-paste(getwd(),"/Documenti/GitHub/ms-sl-2022/","dataset/heart.csv",sep = "",collapse=NULL)
+DataSet<-read.csv(file=path, sep=",", header=TRUE)
+dim(DataSet)
+describe(DataSet)
+head(DataSet)
 
 # Confermiamo che non ci sono valori mancanti
-sum(is.na(WW))
+sum(is.na(DataSet))
 
 ################# Visualizzazione Outliers ################# 
 
 # Osserviamo la presenza di outlier nei valori del colesterolo, nello specifico
 # un valore oltre 500.
-boxplot(WW$chol, main = "cholesterol")
+boxplot(DataSet$chol, main = "cholesterol")
 
 # Osserviamo la presenza di outlier nei valori della pressione saguigna, nello specifico
 # si rileva la presenza valori oltre 170.
-boxplot(WW$trtbps, main = "blood pressure")
+boxplot(DataSet$trtbps, main = "blood pressure")
 
 # Osserviamo la presenza di un singolo outlier nei valori massimi del battito cardiaco,
 # in particolare un valore minore di 80.
-boxplot(WW$thalachh,  main = "maximum heart rate achieved")
+boxplot(DataSet$thalachh,  main = "maximum heart rate achieved")
 
 # Non si rileva la presenza di outlier nei valori dell'età
-boxplot(WW$age,  main = "age")
+boxplot(DataSet$age,  main = "age")
 
+################# Rename dei dati ################# 
 
-################# Rimozione Outliers ################# 
+DataSetForGraph=DataSet%>%rename(
+  "chest_pain"="cp",
+  "cholestrol"="chol",
+  "exercise_induced_angina"="exng",
+  "number_of_vessel"="caa",
+  "blood_pressure"="trtbps",
+  "fast_blood_sugar"="fbs",
+  "max_heart_rate_achieved"="thalachh",
+  "thalassemia"="thall",
+  "peak_exercice_slope"="slp",
+  "ecg_result"="restecg"
+)
 
-# Rimozione outlier colesterolo
-#quartiles <- quantile(WW$chol, probs=c(.25, .75), na.rm = FALSE)
-#IQR <- IQR(WW$chol)
-#Lower <- quartiles[1] - 1.5*IQR
-#Upper <- quartiles[2] + 1.5*IQR 
-#WW_2 <- subset(WW, WW$chol > Lower & WW$chol < Upper)
-#boxplot(WW_2$chol, main = "cholesterol, no outliers")
+# Sex
+DataSetForGraph=DataSetForGraph%>%mutate(sex=recode(sex,
+                                                    "1"="Male",
+                                                    "0"="Female"))
+# Exercise induced angina
+DataSetForGraph=DataSetForGraph%>%mutate(exercise_induced_angina=recode(exercise_induced_angina,
+                                                                        "1"="yes",
+                                                                        "0"="No"))
+# Chest pain
+DataSetForGraph=DataSetForGraph%>%mutate(chest_pain=recode(chest_pain,
+                                                           "0"="asymptomatic",
+                                                           "1"="atypical angina",
+                                                           "2"="non-anginal pain",
+                                                           "3"="typical angina"))
+# Slope of the peak exercise ST segment
+DataSetForGraph=DataSetForGraph%>%mutate(peak_exercice_slope=recode(peak_exercice_slope,
+                                                                    "0"="upsloping",
+                                                                    "1"="flat",
+                                                                    "2"="downsloping"))
+# Fat blood sugar
+DataSetForGraph=DataSetForGraph%>%mutate(fast_blood_sugar=recode(fast_blood_sugar,
+                                                                 "0"="fasting blood sugar < 120",
+                                                                 "1"="fasting blood sugar > 120"))
+# ECG result
+DataSetForGraph=DataSetForGraph%>%mutate(ecg_result=recode(ecg_result,
+                                                           "0"="left ventricular hypertrophy",
+                                                           "1"="normal",
+                                                           "2"="ST-T wave abnormality"))
+# Thalassemia (blood disorder)
+DataSetForGraph=DataSetForGraph%>%mutate(thalassemia=recode(thalassemia,
+                                                            "1"="fixed defect",
+                                                            "2"="normal blood flow",
+                                                            "3"="reversable defect"))
+# Number of free major heart vessels
+DataSetForGraph=DataSetForGraph%>%mutate(number_of_vessel=recode(number_of_vessel,
+                                                            "0"="no free heart vessels",
+                                                            "1"="one free heart vessel",
+                                                            "2"="two free heart vessels",
+                                                            "3"="three free heart vessels",
+                                                            "4"="all free heart vessels"))
 
-# Rimozione outlier pressione sanguigna
-#quartiles <- quantile(WW$trtbps, probs=c(.25, .75), na.rm = FALSE)
-#IQR <- IQR(WW$trtbps)
-#Lower <- quartiles[1] - 1.5*IQR
-#Upper <- quartiles[2] + 1.5*IQR 
-#WW_2 <- subset(WW, WW$trtbps > Lower & WW$trtbps < Upper)
-#boxplot(WW_2$trtbps, main = "blood pressure, no outliers")
+################# Istogrammi ################# 
 
-# Rimozione outlier battito cardiaco
-#quartiles <- quantile(WW$thalachh, probs=c(.25, .75), na.rm = FALSE)
-#IQR <- IQR(WW$thalachh)
-#Lower <- quartiles[1] - 1.5*IQR
-#Upper <- quartiles[2] + 1.5*IQR 
-#WW_2 <- subset(WW, WW$thalachh > Lower & WW$thalachh < Upper)
-#boxplot(WW_2$thalachh,  main = "maximum heart rate achieved, no outliers")
+# Sex histogram
+ggplot(data=DataSetForGraph,aes(x=sex,fill=sex))+geom_bar()
 
-################# Istogramma di alcuni regressori (valori discreti) ################# 
+# Age histogram
+ggplot(data=DataSetForGraph,aes(x=age,fill=sex))+geom_histogram(col="black")
 
-heart_1=WW%>%rename("Chest_pain"="cp","cholestrol"="chol",
-                       "exercise_induced_angina"="exng","number_of_vessel"="caa",
-                       "blood_pressure"="trtbps","fast_blood_sugar"="fbs",
-                       "max_heart_rate_achieved"="thalachh","stress_test"="thall")
+# Chest pain histogram
+ggplot(data=DataSetForGraph,aes(x=chest_pain,fill=sex))+geom_bar()+theme(axis.text=element_text(size = 8))
 
-heart1=heart_1%>%mutate(sex=recode(sex,"1"="Male","0"="Female"))
-heart1=heart1%>%mutate(exercise_induced_angina=recode(exercise_induced_angina,"1"="yes","0"="No"))
-heart1=heart1%>%mutate(Chest_pain=recode(Chest_pain,"0"="t-angina","1"="a-angina","2"="non-anginal","3"="asymptomatic"))
-heart1=heart1%>%mutate(slp=recode(slp,"0"="upsloping","1"="flat","2"="downsloping"))
-heart1=heart1%>%mutate(fbs=recode(fbs,"0"="fasting blood sugar > 120","1"="fasting blood sugar < 120"))
-heart1=heart1%>%mutate(restecg=recode(restecg,"0"="normal","1"="ST-T wave abnormality","2"="left ventricular hypertrophy"))
-heart1=heart1%>%mutate(restecg=recode(restecg,"0"="normal","1"="ST-T wave abnormality","2"="left ventricular hypertrophy"))
+# Slope of the peak exercise ST segment histogram
+ggplot(data=DataSetForGraph,aes(x=peak_exercice_slope,fill=sex))+geom_bar()
 
-ggplot(data=heart1,aes(x=sex,fill=sex))+geom_bar()
-ggplot(data=heart1,aes(x=age,fill=sex))+geom_histogram(col="black")
-ggplot(data=heart1,aes(x=Chest_pain,fill=sex))+geom_bar()+theme(axis.text=element_text(size = 8))
-ggplot(data=heart1,aes(x=slp,fill=sex))+geom_bar()
-ggplot(data=heart1,aes(x=exercise_induced_angina,fill=sex))+geom_bar()
-ggplot(data=heart1,aes(x=fbs,fill=sex))+geom_bar()
-ggplot(data=heart1,aes(x=restecg,fill=sex))+geom_bar()
+# Exercise induced angina histogram
+ggplot(data=DataSetForGraph,aes(x=exercise_induced_angina,fill=sex))+geom_bar()
 
+# Fast blood sugar histogram
+ggplot(data=DataSetForGraph,aes(x=fast_blood_sugar,fill=sex))+geom_bar()
+
+# Thalassemia (blood disorder) histogram
+ggplot(data=DataSetForGraph,aes(x=thalassemia,fill=sex))+geom_bar()
+
+# ECG result histogram
+ggplot(data=DataSetForGraph,aes(x=ecg_result,fill=sex))+geom_bar()
+
+# Number of free major heart vessels histogram
+ggplot(data=DataSetForGraph,aes(x=number_of_vessel,fill=sex))+geom_bar()
 
 ################# Grafici per regressori continui ################# 
 
-plot_chol_bp=ggplot(data=heart1,aes(x=cholestrol,y=blood_pressure,col=sex))+geom_point()+geom_smooth(method="lm",se=FALSE)
+# Regression plot for cholesterol and blood pressure
+plot_chol_bp=ggplot(data=DataSetForGraph,aes(x=cholestrol,y=blood_pressure,col=sex))+geom_point()+geom_smooth(method="lm",se=FALSE)
 ggarrange(plot_chol_bp,ncol=1,nrow=1)
 
-plot_chol_mhr=ggplot(data=heart1,aes(x=cholestrol,y=max_heart_rate_achieved,col=sex))+geom_point()+geom_smooth(method="lm",se=FALSE)
+# Regression plot for cholesterol and max heart rate achieved
+plot_chol_mhr=ggplot(data=DataSetForGraph,aes(x=cholestrol,y=max_heart_rate_achieved,col=sex))+geom_point()+geom_smooth(method="lm",se=FALSE)
 ggarrange(plot_chol_mhr,ncol=1,nrow=1)
 
-plot_chol_age=ggplot(data=heart1,aes(x=cholestrol,y=age,col=sex))+geom_point()+geom_smooth(method="lm",se=FALSE)
+# Regression plot for cholesterol and age
+plot_chol_age=ggplot(data=DataSetForGraph,aes(x=cholestrol,y=age,col=sex))+geom_point()+geom_smooth(method="lm",se=FALSE)
 ggarrange(plot_chol_age,ncol=1,nrow=1)
 
-ggplot(WW, aes(x=trtbps, y=..count..)) + geom_density(color = "red") + ggtitle("Blood Pressure") + theme(plot.title = element_text(hjust = 0.5))
-ggplot(WW, aes(x=chol, y=..count..)) + geom_density(color = "red") + ggtitle("Cholesterol Level") + theme(plot.title = element_text(hjust = 0.5))
+# Density plot of blood pressure
+ggplot(DataSet, aes(x=trtbps, y=..count..)) + geom_density(color = "red") + ggtitle("Blood Pressure") + theme(plot.title = element_text(hjust = 0.5))
 
+# Density plot of cholesterol
+ggplot(DataSet, aes(x=chol, y=..count..)) + geom_density(color = "red") + ggtitle("Cholesterol Level") + theme(plot.title = element_text(hjust = 0.5))
 
 ################# Verifica della presenza di multicollinearità ################# 
 
-# Possiamo osservare che vi è presenza di multiccolinearità dal momento che vi sono coppie di regressori
-# Che presentano una significativa collreazione positiva/negativa.
-# È quindi necessario utilizzare delle tecniche di regolarizzazione per ovviare a tale ostacolo
-WW.cor = cor(WW)
-corrplot(WW.cor)
-WW.cor
-n<-nrow(WW)
+# Possiamo osservare che vi è presenza di media multiccolinearità dal momento che vi sono coppie di regressori
+# Che presentano una collreazione positiva/negativa.
+# È quindi necessario utilizzare delle tecniche di regolarizzazione per ovviare a tale ostacolo.
+DataSet.cor = cor(DataSet)
+corrplot(DataSet.cor)
+DataSet.cor
+n<-nrow(DataSet)
 
 ################# Applicazione delle tecniche di regolarizzazione con corss-validation ################# 
 
 # discretizzazione di lambda in una sequenza decrescente di valori
-qq<-seq (15, -5, length =150)
+qq<-seq(4, -4, length =150)
 griglia =10^qq
 
 # divisione tra matrice dei regressori e vettore variabile dipendente
-n<-nrow(WW)
-names(WW)
-xx<-WW[,-14]
+n<-nrow(DataSet)
+names(DataSet)
+xx<-DataSet[,-14]
 x<-as.matrix(xx)
 dim(x)
 names(x)
-y<-WW$output
+y<-DataSet$output
 
 ################# Ridge regression ################# 
 
 # Di default glmnet() standardizza i regressori
-ridge.mods.ALL = glmnet (x,y,alpha=0, lambda=griglia)
-coef(ridge.mods.ALL)
+ridgeAllLambda = glmnet (x,y,alpha=0, lambda=griglia)
+coef(ridgeAllLambda)
 
 # Grafico andamento dei regressori rispetto al lambda
-plot(ridge.mods.ALL, main="Ridge Regression con regressori standardizzati",xvar="lambda", label=TRUE)
+plot(ridgeAllLambda, main="Ridge Regression con regressori standardizzati",xvar="lambda", label=TRUE)
 
 # Applichiamo la K-Fold cross-validation con K=10 (default)
-cv.outK10=cv.glmnet(x,y,lambda=griglia, alpha=0)
-plot(cv.outK10)
+ridgeKfold10=cv.glmnet(x,y,lambda=griglia,alpha=0)
+plot(ridgeKfold10)
 
 # Estraiamo il lambda minimo a cui corrisponde la minore media deli MSE calcolati sul test-set
-bestLambda.RR <- cv.outK10$lambda.min
-bestLambda.RR # = 0.09047357
+ridgeBestLambda <- ridgeKfold10$lambda.min
+ridgeBestLambda # = 0.08974704
 
 # Utilizziamo il lambda migliore per stimare il modello finale
-ridge.mod.kCV=glmnet(x,y,alpha=0,lambda=bestLambda.RR)
-coef(ridge.mod.kCV)[,1]
+ridgeModBestLambda=glmnet(x,y,alpha=0,lambda=ridgeBestLambda)
+coef(ridgeModBestLambda)[,1]
 
 ################# LASSO ################# 
 
 # Usiamo la funzione glmnet() ponendo alpha=1 per la regressione LASSO con l’intero dataset
-LASSO.mods.ALL =glmnet (x,y, alpha =1, lambda=griglia)
+LassoAllLambda =glmnet (x,y,alpha =1,lambda=griglia)
 # È possibile osservare come la tecnica LASSO, anche per valori piccoli di lambda, pone alcuni regressori a zero
-plot(LASSO.mods.ALL, main="LASSO; regressori standardizzati",xvar="lambda",label=TRUE)
-coef(LASSO.mods.ALL)[,1]
-dim(coef(LASSO.mods.ALL))
+plot(LassoAllLambda, main="LASSO; regressori standardizzati",xvar="lambda",label=TRUE)
+coef(LassoAllLambda)[,1]
+dim(coef(LassoAllLambda))
 
 # Applichiamo la K-Fold cross-validation con K=10 (default)
-cv.outK10.LASSO=cv.glmnet(x,y,lambda=griglia, alpha=1)
-plot(cv.outK10.LASSO, main="LASSO: k-fold CV per WW_2")
-bestLambda.LASSO<-cv.outK10.LASSO$lambda.min
+lassoKfold10=cv.glmnet(x,y,lambda=griglia, alpha=1)
+plot(lassoKfold10, main="LASSO: k-fold CV K = 10")
+lassoBestLambda<-lassoKfold10$lambda.min
 # Il lambda minimo a cui corrisponde il più piccolo valore del MSE test
-bestLambda.LASSO # = 0.008977952
+lassoBestLambda # = 0.007571721
 
 # Stima del modello di regressione LASSO con il lambda.min
-LASSO.mod.kCV=glmnet(x,y,alpha=1,lambda=bestLambda.LASSO)
-coef(LASSO.mod.kCV)[,1]
+lassoModBestLambda=glmnet(x,y,alpha=1,lambda=lassoBestLambda)
+coef(lassoModBestLambda)[,1]
 
 ################# Elastic-Net ################# 
 
-EN.modes.ALL <- glmnet(x, y, lambda=griglia, alpha=.1)
-plot(EN.modes.ALL, main="ELASTIC NET; regressori standardizzati alpha=0.1",xvar="lambda",label=TRUE)
+ElasticNetAllLambda01 <- glmnet(x, y, lambda=griglia, alpha=.1)
+plot(ElasticNetAllLambda01, main="ELASTIC NET; regressori standardizzati alpha=0.1",xvar="lambda",label=TRUE)
 
-EN.modes.ALL <- glmnet(x, y, lambda=griglia, alpha=.3)
-plot(EN.modes.ALL, main="ELASTIC NET; regressori standardizzati alpha=0.3",xvar="lambda",label=TRUE)
+ElasticNetAllLambda03 <- glmnet(x, y, lambda=griglia, alpha=.3)
+plot(ElasticNetAllLambda03, main="ELASTIC NET; regressori standardizzati alpha=0.3",xvar="lambda",label=TRUE)
 
-EN.modes.ALL <- glmnet(x, y, lambda=griglia, alpha=.7)
-plot(EN.modes.ALL, main="ELASTIC NET; regressori standardizzati alpha=0.7",xvar="lambda",label=TRUE)
+ElasticNetAllLambda07 <- glmnet(x, y, lambda=griglia, alpha=.7)
+plot(ElasticNetAllLambda07, main="ELASTIC NET; regressori standardizzati alpha=0.7",xvar="lambda",label=TRUE)
 
-EN.modes.ALL <- glmnet(x, y, lambda=griglia, alpha=.9)
-plot(EN.modes.ALL, main="ELASTIC NET; regressori standardizzati alpha=0.9",xvar="lambda",label=TRUE)
-
+ElasticNetAllLambda09 <- glmnet(x, y, lambda=griglia, alpha=.9)
+plot(ElasticNetAllLambda09, main="ELASTIC NET; regressori standardizzati alpha=0.9",xvar="lambda",label=TRUE)
 
 # k-fold CROSS VALIDATION per ELASTIC NET
-cv.outK10.EN01=cv.glmnet(x,y,lambda=griglia, alpha=0.1)
-plot(cv.outK10.EN01, main="Elastic Net alpha=0.1: k-fold CV per WW_2")
-bestLambda.EN01<-cv.outK10.EN01$lambda.min 
-bestLambda.EN01
-EN01.mod.kCV=glmnet(x,y,alpha=0.1,lambda=bestLambda.EN01)
-coef(EN01.mod.kCV)[,1]
+elasticNet01Kfold10=cv.glmnet(x,y,lambda=griglia, alpha=0.1)
+plot(elasticNet01Kfold10, main="Elastic Net alpha=0.1: k-fold CV K = 10")
+elasticNet01BestLambda<-elasticNet01Kfold10$lambda.min 
+elasticNet01BestLambda # = 0.07931017
+elasticNet01ModBestLambda=glmnet(x,y,alpha=0.1,lambda=elasticNet01BestLambda)
+coef(elasticNet01ModBestLambda)[,1]
 
 # Con alpha = 0.3
-cv.outK10.EN03=cv.glmnet(x,y,lambda=griglia, alpha=0.3)
-plot(cv.outK10.EN03, main="Elastic Net alpha=0.3: k-fold CV per WW_2")
-bestLambda.EN03<-cv.outK10.EN03$lambda.min 
-bestLambda.EN03
-EN03.mod.kCV=glmnet(x,y,alpha=0.3,lambda=bestLambda.EN03)
-coef(EN03.mod.kCV)[,1]
+elasticNet03Kfold10=cv.glmnet(x,y,lambda=griglia, alpha=0.3)
+plot(elasticNet03Kfold10, main="Elastic Net alpha=0.3: k-fold CV K = 10")
+elasticNet03BestLambda<-elasticNet03Kfold10$lambda.min 
+elasticNet03BestLambda # = 0.02606798
+elasticNet03ModBestLambda=glmnet(x,y,alpha=0.3,lambda=elasticNet03BestLambda)
+coef(elasticNet03ModBestLambda)[,1]
 
 # Con alpha = 0.5
-cv.outK10.EN05=cv.glmnet(x,y,lambda=griglia, alpha=0.5)
-plot(cv.outK10.EN05, main="Elastic Net alpha=0.5: k-fold CV per WW_2")
-bestLambda.EN05<-cv.outK10.EN05$lambda.min
-bestLambda.EN05
-EN05.mod.kCV=glmnet(x,y,alpha=0.5,lambda=bestLambda.EN05)
-coef(EN05.mod.kCV)[,1]
+elasticNet05Kfold10=cv.glmnet(x,y,lambda=griglia, alpha=0.5)
+plot(elasticNet05Kfold10, main="Elastic Net alpha=0.5: k-fold CV K = 10")
+elasticNet05BestLambda<-elasticNet05Kfold10$lambda.min
+elasticNet05BestLambda # = 0.01589799
+elasticNet05ModBestLambda=glmnet(x,y,alpha=0.5,lambda=elasticNet05BestLambda)
+coef(elasticNet05ModBestLambda)[,1]
 
 # Con alpha = 0.7
-cv.outK10.EN07=cv.glmnet(x,y,lambda=griglia, alpha=0.7)
-plot(cv.outK10.EN07, main="Elastic Net alpha=0.7: k-fold CV per WW_2")
-bestLambda.EN07<-cv.outK10.EN07$lambda.min
-bestLambda.EN07
-EN07.mod.kCV=glmnet(x,y,alpha=0.7,lambda=bestLambda.EN07)
-coef(EN07.mod.kCV)[,1]
+elasticNet07Kfold10=cv.glmnet(x,y,lambda=griglia, alpha=0.7)
+plot(elasticNet07Kfold10, main="Elastic Net alpha=0.7: k-fold CV K = 10")
+elasticNet07BestLambda<-elasticNet07Kfold10$lambda.min
+elasticNet07BestLambda # = 0.009695656
+elasticNet07ModBestLambda=glmnet(x,y,alpha=0.7,lambda=elasticNet07BestLambda)
+coef(elasticNet07ModBestLambda)[,1]
 
 # Con alpha = 0.9
-cv.outK10.EN09=cv.glmnet(x,y,lambda=griglia, alpha=0.9)
-plot(cv.outK10.EN09, main="Elastic Net alpha=0.9: k-fold CV per WW_2")
-bestLambda.EN09<-cv.outK10.EN09$lambda.min
-bestLambda.EN09
-EN09.mod.kCV=glmnet(x,y,alpha=0.9,lambda=bestLambda.EN09)
-coef(EN09.mod.kCV)[,1]
+elasticNet09Kfold10=cv.glmnet(x,y,lambda=griglia, alpha=0.9)
+plot(elasticNet09Kfold10, main="Elastic Net alpha=0.9: k-fold CV K = 10")
+elasticNet09BestLambda<-elasticNet09Kfold10$lambda.min
+elasticNet09BestLambda # = 0.009695656
+elasticNet09ModBestLambda=glmnet(x,y,alpha=0.9,lambda=elasticNet09BestLambda)
+coef(elasticNet09ModBestLambda)[,1]
 
+################# Confronto fra Ridge, Lasso ed Elastic-Net #################
 
+# Confronto delle stime dei parametri dei modelli con valore di lambda migliore (corrisponde il minor valore dell'MSE di test)
+cbind(coef(ridgeModBestLambda)[,1], coef(lassoModBestLambda)[,1], coef(elasticNet01ModBestLambda)[,1],
+      coef(elasticNet03ModBestLambda)[,1], coef(elasticNet05ModBestLambda)[,1], coef(elasticNet07ModBestLambda)[,1],
+      coef(elasticNet09ModBestLambda)[,1] )
 
-################# Stima del modello migliore per la previsione #################
+# SCELTA del modello sulla base del minor MSE test
+# Per confrontare i modelli bisogna estrarre MSE più piccolo a cui corrisponde il lambda minimo
+mseMinRR <- ridgeKfold10$cvm[ridgeKfold10$lambda == ridgeKfold10$lambda.min]
+mseMinLASSO <- lassoKfold10$cvm[lassoKfold10$lambda == lassoKfold10$lambda.min]
+mseMinEN01 <- elasticNet01Kfold10$cvm[elasticNet01Kfold10$lambda == elasticNet01Kfold10$lambda.min]
+mseMinEN03 <- elasticNet03Kfold10$cvm[elasticNet03Kfold10$lambda == elasticNet03Kfold10$lambda.min]
+mseMinEN05 <- elasticNet05Kfold10$cvm[elasticNet05Kfold10$lambda == elasticNet05Kfold10$lambda.min]
+mseMinEN07 <- elasticNet07Kfold10$cvm[elasticNet07Kfold10$lambda == elasticNet07Kfold10$lambda.min]
+mseMinEN09 <- elasticNet09Kfold10$cvm[elasticNet09Kfold10$lambda == elasticNet09Kfold10$lambda.min]
+vettMSE<-cbind(mseMinLASSO, mseMinRR, mseMinEN01, mseMinEN03, mseMinEN05, mseMinEN07, mseMinEN09)
+vettMSE
+minMSE<-min(vettMSE)
+minMSE
 
+################# Previsione della variabile dipendete per alcuni pazienti di esempio #################
 
+if(minMSE==vettMSE[,1]){
+  bestPredictionModel<-ridgeModBestLambda
+}
+if(minMSE==vettMSE[,2]){
+  bestPredictionModel<-lassoModBestLambda
+}
+if(minMSE==vettMSE[,3]){
+  bestPredictionModel<-elasticNet01ModBestLambda
+}
+if(minMSE==vettMSE[,4]){
+  bestPredictionModel<-elasticNet03ModBestLambda
+}
+if(minMSE==vettMSE[,5]){
+  bestPredictionModel<-elasticNet05ModBestLambda
+}
+if(minMSE==vettMSE[,6]){
+  bestPredictionModel<-elasticNet07ModBestLambda
+}
+if(minMSE==vettMSE[,7]){
+  bestPredictionModel<-elasticNet09ModBestLambda
+}
 
+# Person 1
+# Age: 20
+# Sex: Male (1)
+# Chest pain: Asymptomatic (0)
+# Blood pressure: 120
+# Cholesterol: 80
+# Fasting blood sugar: <120 (0)
+# ECG result: Normal (1)
+# Maximum heart rate achieved: 130
+# Exercise induced angina: No (0)
+# ST depression induced by exercise relative to rest: No (0)
+# Slope of the peak exercise ST segment: Downsloping (0)
+# Number of major vessels: All free (4)
+# Thalassemia: Normal blood flow (2)
+male20data <- c(20,1,0,120,80,0,1,130,0,0,0,4,2)
+male20output <-predict(bestPredictionModel, male20data, type="response")
+male20output
 
+# Person 2
+# Age: 50
+# Sex: Male (1)
+# Chest pain: Atypical angina (1)
+# Blood pressure: 170
+# Cholesterol: 200
+# Fasting blood sugar: >120 (1)
+# ECG result: Having ST-T wave abnormality (2)
+# Maximum heart rate achieved: 180
+# Exercise induced angina: Yes (1)
+# ST depression induced by exercise relative to rest: No (0)
+# Slope of the peak exercise ST segment: Upsloping (2)
+# Number of major vessels: Two free (2)
+# Thalassemia: Fixed defect (1)
+male50data <- c(50,1,1,170,200,1,2,180,1,0,2,1,1)
+male50output <-predict(bestPredictionModel, male50data, type="response")
+male50output
 
+# Person 3
+# Age: 70
+# Sex: Male (1)
+# Chest pain: Typical angina (3)
+# Blood pressure: 170
+# Cholesterol: 230
+# Fasting blood sugar: >120 (1)
+# ECG result: Having ST-T wave abnormality (2)
+# Maximum heart rate achieved: 160
+# Exercise induced angina: Yes (1)
+# ST depression induced by exercise relative to rest: No (0)
+# Slope of the peak exercise ST segment: Upsloping (2)
+# Number of major vessels: No free vessels (0)
+# Thalassemia: Fixed defect (1)
+male70data <- c(70,1,3,170,230,1,2,160,1,0,2,0,1)
+male70output <-predict(bestPredictionModel, male70data, type="response")
+male70output
 
 
 
