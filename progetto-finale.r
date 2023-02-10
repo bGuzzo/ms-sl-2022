@@ -188,10 +188,10 @@ plot_chol_age=ggplot(data=DataSetForGraph,aes(x=cholestrol,y=age,col=sex))+geom_
 ggarrange(plot_chol_age,ncol=1,nrow=1)
 
 # Density plot of blood pressure
-ggplot(DataSet, aes(x=trtbps, y=..count..)) + geom_density(color = "red") + ggtitle("Blood Pressure") + theme(plot.title = element_text(hjust = 0.5))
+ggplot(DataSetForGraph, aes(x=blood_pressure,fill=sex)) + geom_density() + ggtitle("Blood Pressure") + theme(plot.title = element_text(hjust = 0.5))
 
 # Density plot of cholesterol
-ggplot(DataSet, aes(x=chol, y=..count..)) + geom_density(color = "red") + ggtitle("Cholesterol Level") + theme(plot.title = element_text(hjust = 0.5))
+ggplot(DataSetForGraph, aes(x=cholestrol,fill=sex)) + geom_density() + ggtitle("Cholesterol Level") + theme(plot.title = element_text(hjust = 0.5))
 
 ################# Verifica della presenza di multicollinearità ################# 
 
