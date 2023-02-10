@@ -228,7 +228,7 @@ plot(ridgeAllLambda, main="Ridge Regression con regressori standardizzati",xvar=
 
 # Applichiamo la K-Fold cross-validation con K=10 (default)
 ridgeKfold10=cv.glmnet(x,y,lambda=griglia,alpha=0)
-plot(ridgeKfold10)
+plot(ridgeKfold10, main="RIDGE: k-fold CV K = 10")
 
 # Estraiamo il lambda minimo a cui corrisponde la minore media deli MSE calcolati sul test-set
 ridgeBestLambda <- ridgeKfold10$lambda.min
