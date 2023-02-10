@@ -56,6 +56,7 @@ library(corrplot)
 library(glmnet)
 library(ggplot2)
 library(ggpubr)
+library(betareg)
 
 # Set del seme per evitare risultati diversi in run successivi
 set.seed(100)
@@ -419,11 +420,65 @@ male70output
 
 ################# Appendice 2 - La regressione Beta #################
 
-# TODO Bruno
+################# Descrizione DataSet ################# 
 
+# Serial.no: row number
 
+# GRE.Score: University rating according to GRE program, integer (out of 340)
 
+# TOEFL.Score: TOEFL student english exam points, integer (out of 120)
 
+# Univeristy.Rating: University rating, integer (out of 5) 
+
+# SOP: Statement of Purpose, continuous (out of 5)
+
+# LOR: Letter of Recommendation Strength, continuous (out of 5)
+
+# CGPA: Cumulative Grade Point Average, student overall academic performance, continuous (out of 10)
+
+# Research: Student research experience, binary (either 0 or 1)
+
+# Chance.of.Admit: Probability of student admission to the college
+
+# https://www.kaggle.com/code/malteshkumar/my-first-kernel-university-admit-percentage/data
+path2<-paste(getwd(),"/Documenti/GitHub/ms-sl-2022/","dataset/Admission_Predict.csv",sep = "",collapse=NULL)
+dataSetBeta<-read.csv(file=path2, sep=",", header=TRUE)
+attach(dataSetBeta)
+dim(dataSetBeta)
+describe(dataSetBeta)
+head(dataSetBeta)
+
+# Confermiamo che non ci sono valori mancanti
+sum(is.na(dataSetBeta))
+
+################# Grafici esplorativi #################
+
+dataSetBetaForGraph=dataSetBeta%>%mutate(Research=recode(Research,"0"="No","1"="Yes"))
+
+# Istogramma ricerca si/no
+ggplot(dataSetBetaForGraph, aes(x=Research,fill=Research)) + geom_bar()
+
+# Istogramma rating universitario
+ggplot(dataSetBetaForGraph, aes(x=University.Rating,fill=Research)) + geom_bar()
+
+# Desnità score GRE
+ggplot(dataSetBetaForGraph, aes(x=GRE.Score,fill=Research)) + geom_density()
+
+# Desnità score esame TOEFL
+ggplot(dataSetBetaForGraph, aes(x=TOEFL.Score,fill=Research)) + geom_density()
+
+# Desnità indicatore CGPA, overall academic performance of a student
+ggplot(dataSetBetaForGraph, aes(x=CGPA,fill=Research)) + geom_density()
+
+################# Stima di un modello di regressione Beta #################
+
+# Modello con tutti i regressori 
+betaModel <- betareg(formula = Chance.of.Admit ~ GRE.Score+TOEFL.Score+University.Rating+SOP+LOR+CGPA+Research, data = dataSetBeta)
+summary(betaModel)# Pseudo R-squared: 0.8276
+
+# Eliminiamo i regressori University.Rating e SOP doto che sono meno statisticamente significativi
+betaModel2 <- betareg(formula = Chance.of.Admit~GRE.Score+TOEFL.Score+LOR+CGPA+Research, data = dataSetBeta)
+summary(betaModel2) # Pseudo R-squared: 0.8253
 
 
 
