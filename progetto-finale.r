@@ -412,10 +412,14 @@ male70output <-predict(bestPredictionModel, male70data, type="response")
 male70output
 
 
+################# Appendice 1 - Algorimo di ML #################
+
+# TODO Marco
 
 
+################# Appendice 2 - La regressione Beta #################
 
-
+# TODO Bruno
 
 
 
