@@ -26,6 +26,7 @@
 # exang: Exercise induced angina (1 = yes; 0 = no)
 
 # oldpeak: ST depression induced by exercise relative to rest (‘ST’ relates to positions on the ECG plot)
+
 # slope: the slope of the peak exercise ST segment 
 #   - Value 0: downsloping
 #   - Value 1: flat
@@ -102,6 +103,11 @@ DataSetForGraph = DataSet%>%rename(
   "peak_exercice_slope" = "slp", 
   "ecg_result" = "restecg"
 )
+
+# Output
+DataSetForGraph = DataSetForGraph%>%mutate(output = recode(output, 
+                                                        "1" = "Yes", 
+                                                        "0" = "No"))
 
 # Sex
 DataSetForGraph = DataSetForGraph%>%mutate(sex = recode(sex, 
@@ -185,7 +191,7 @@ ggplot(data = DataSetForGraph, aes(x = fast_blood_sugar, fill = sex)) +
 # Thalassemia (blood disorder) histogram
 ggplot(data = DataSetForGraph, aes(x = thalassemia, fill = sex)) + 
   geom_bar() + 
-  ggtitle("Fast blood sugar histogram") + 
+  ggtitle("Thalassemia") + 
   theme(plot.title = element_text(hjust = 0.5))
 
 # ECG result histogram
@@ -248,6 +254,17 @@ corrplot(DataSet.cor)
 DataSet.cor
 n <- nrow(DataSet)
 
+################# Modello con tutti i regressori ################# 
+attach(DataSet)
+model <- lm(output~., data = DataSet)
+summary(model)
+
+# Output histogram
+ggplot(data = DataSetForGraph, aes(x = output, fill = sex)) + 
+  geom_bar() + 
+  ggtitle("Heart attack") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
 ################# Applicazione delle tecniche di regolarizzazione con corss-validation ################# 
 
 # discretizzazione di lambda in una sequenza decrescente di valori
@@ -267,7 +284,7 @@ y <- DataSet$output
 
 # Di default glmnet() standardizza i regressori
 ridgeAllLambda = glmnet (x, y, alpha = 0, lambda = griglia)
-coef(ridgeAllLambda)
+coef(ridgeAllLambda)[, 1]
 
 # Grafico andamento dei regressori rispetto al lambda
 plot(ridgeAllLambda, main = "Ridge Regression con regressori standardizzati", xvar = "lambda", label = TRUE)
@@ -278,7 +295,7 @@ plot(ridgeKfold10, main = "RIDGE: k-fold CV K = 10")
 
 # Estraiamo il lambda minimo a cui corrisponde la minore media deli MSE calcolati sul test-set
 ridgeBestLambda <- ridgeKfold10$lambda.min
-ridgeBestLambda # = 0.08974704
+ridgeBestLambda
 
 # Utilizziamo il lambda migliore per stimare il modello finale
 ridgeModBestLambda = glmnet(x, y, alpha = 0, lambda = ridgeBestLambda)
@@ -298,7 +315,7 @@ lassoKfold10 = cv.glmnet(x, y, lambda = griglia, alpha = 1)
 plot(lassoKfold10, main = "LASSO: k-fold CV K = 10")
 lassoBestLambda <- lassoKfold10$lambda.min
 # Il lambda minimo a cui corrisponde il più piccolo valore del MSE test
-lassoBestLambda # = 0.007571721
+lassoBestLambda
 
 # Stima del modello di regressione LASSO con il lambda.min
 lassoModBestLambda = glmnet(x, y, alpha = 1, lambda = lassoBestLambda)
@@ -322,7 +339,7 @@ plot(ElasticNetAllLambda09, main = "ELASTIC NET; regressori standardizzati alpha
 elasticNet01Kfold10 = cv.glmnet(x, y, lambda = griglia, alpha = 0.1)
 plot(elasticNet01Kfold10, main = "Elastic Net alpha = 0.1: k-fold CV K = 10")
 elasticNet01BestLambda <- elasticNet01Kfold10$lambda.min 
-elasticNet01BestLambda # = 0.07931017
+elasticNet01BestLambda
 elasticNet01ModBestLambda = glmnet(x, y, alpha = 0.1, lambda = elasticNet01BestLambda)
 coef(elasticNet01ModBestLambda)[, 1]
 
@@ -330,7 +347,7 @@ coef(elasticNet01ModBestLambda)[, 1]
 elasticNet03Kfold10 = cv.glmnet(x, y, lambda = griglia, alpha = 0.3)
 plot(elasticNet03Kfold10, main = "Elastic Net alpha = 0.3: k-fold CV K = 10")
 elasticNet03BestLambda <- elasticNet03Kfold10$lambda.min 
-elasticNet03BestLambda # = 0.02606798
+elasticNet03BestLambda
 elasticNet03ModBestLambda = glmnet(x, y, alpha = 0.3, lambda = elasticNet03BestLambda)
 coef(elasticNet03ModBestLambda)[, 1]
 
@@ -338,7 +355,7 @@ coef(elasticNet03ModBestLambda)[, 1]
 elasticNet05Kfold10 = cv.glmnet(x, y, lambda = griglia, alpha = 0.5)
 plot(elasticNet05Kfold10, main = "Elastic Net alpha = 0.5: k-fold CV K = 10")
 elasticNet05BestLambda <- elasticNet05Kfold10$lambda.min
-elasticNet05BestLambda # = 0.01589799
+elasticNet05BestLambda
 elasticNet05ModBestLambda = glmnet(x, y, alpha = 0.5, lambda = elasticNet05BestLambda)
 coef(elasticNet05ModBestLambda)[, 1]
 
@@ -346,7 +363,7 @@ coef(elasticNet05ModBestLambda)[, 1]
 elasticNet07Kfold10 = cv.glmnet(x, y, lambda = griglia, alpha = 0.7)
 plot(elasticNet07Kfold10, main = "Elastic Net alpha = 0.7: k-fold CV K = 10")
 elasticNet07BestLambda <- elasticNet07Kfold10$lambda.min
-elasticNet07BestLambda # = 0.009695656
+elasticNet07BestLambda
 elasticNet07ModBestLambda = glmnet(x, y, alpha = 0.7, lambda = elasticNet07BestLambda)
 coef(elasticNet07ModBestLambda)[, 1]
 
@@ -354,7 +371,7 @@ coef(elasticNet07ModBestLambda)[, 1]
 elasticNet09Kfold10 = cv.glmnet(x, y, lambda = griglia, alpha = 0.9)
 plot(elasticNet09Kfold10, main = "Elastic Net alpha = 0.9: k-fold CV K = 10")
 elasticNet09BestLambda <- elasticNet09Kfold10$lambda.min
-elasticNet09BestLambda # = 0.009695656
+elasticNet09BestLambda
 elasticNet09ModBestLambda = glmnet(x, y, alpha = 0.9, lambda = elasticNet09BestLambda)
 coef(elasticNet09ModBestLambda)[, 1]
 
