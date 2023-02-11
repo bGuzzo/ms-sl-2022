@@ -545,27 +545,50 @@ sum(is.na(dataSetBeta))
 
 ################# Grafici esplorativi #################
 
-dataSetBetaForGraph = dataSetBeta%>%mutate(Research = recode(Research, "0" = "No", "1" = "Yes"))
+dataSetBetaForGraph = dataSetBeta%>%
+  mutate(Research = recode(Research, "0" = "No", "1" = "Yes"))
 
 # Istogramma ricerca si/no
-ggplot(dataSetBetaForGraph, aes(x = Research, fill = Research)) + geom_bar() + ggtitle("Research histogram") + theme(plot.title = element_text(hjust = 0.5))
+ggplot(dataSetBetaForGraph, aes(x = Research, fill = Research)) + 
+  geom_bar() + 
+  ggtitle("Research histogram") + 
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Istogramma rating universitario
-ggplot(dataSetBetaForGraph, aes(x = University.Rating, fill = Research)) + geom_bar() + ggtitle("University.Rating histogram") + theme(plot.title = element_text(hjust = 0.5))
+ggplot(dataSetBetaForGraph, aes(x = University.Rating, fill = Research)) + 
+  geom_bar() + 
+  ggtitle("University.Rating histogram") + 
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Desnità score GRE
-ggplot(dataSetBetaForGraph, aes(x = GRE.Score, fill = Research)) + geom_density() + ggtitle("GRE Indicator density") + theme(plot.title = element_text(hjust = 0.5))
+ggplot(dataSetBetaForGraph, aes(x = GRE.Score, fill = Research)) + 
+  geom_density() + 
+  ggtitle("GRE Indicator density") + 
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Desnità score esame TOEFL
-ggplot(dataSetBetaForGraph, aes(x = TOEFL.Score, fill = Research)) + geom_density() + ggtitle("TOEFL.Score Indicator density") + theme(plot.title = element_text(hjust = 0.5))
+ggplot(dataSetBetaForGraph, aes(x = TOEFL.Score, fill = Research)) + 
+  geom_density() + 
+  ggtitle("TOEFL.Score Indicator density") + 
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Desnità indicatore CGPA, overall academic performance of a student
-ggplot(dataSetBetaForGraph, aes(x = CGPA, fill = Research)) + geom_density() + ggtitle("CGPA Indicator density") + theme(plot.title = element_text(hjust = 0.5))
+ggplot(dataSetBetaForGraph, aes(x = CGPA, fill = Research)) + 
+  geom_density() + 
+  ggtitle("CGPA Indicator density") + 
+  theme(plot.title = element_text(hjust = 0.5))
 
 ################# Stima di un modello di regressione Beta #################
 
 # Modello con tutti i regressori 
-betaModel <- betareg(formula = Chance.of.Admit ~ GRE.Score+TOEFL.Score+University.Rating+SOP+LOR+CGPA+Research, data = dataSetBeta)
+betaModel <- betareg(formula = Chance.of.Admit~
+                       GRE.Score+
+                       TOEFL.Score+
+                       University.Rating+
+                       SOP+
+                       LOR+
+                       CGPA+
+                       Research, data = dataSetBeta)
 summary(betaModel)# Pseudo R-squared: 0.8276
 
 # Eliminiamo i regressori University.Rating e SOP doto che sono meno statisticamente significativi
