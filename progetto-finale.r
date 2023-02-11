@@ -62,7 +62,8 @@ library(betareg)
 set.seed(100)
 
 # https://DataSetw.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-data set
-path<-paste(getwd(),"/Documenti/GitHub/ms-sl-2022/","dataset/heart.csv",sep = "",collapse=NULL)
+#path<-paste(getwd(),"/Documenti/GitHub/ms-sl-2022/","dataset/heart.csv",sep = "",collapse=NULL)
+path<-paste(getwd(),"/dataset/heart.csv",sep = "",collapse=NULL)
 DataSet<-read.csv(file=path, sep=",", header=TRUE)
 dim(DataSet)
 describe(DataSet)
@@ -196,8 +197,8 @@ ggplot(DataSetForGraph, aes(x=cholestrol,fill=sex)) + geom_density() + ggtitle("
 ################# Verifica della presenza di multicollinearità ################# 
 
 # Possiamo osservare che vi è presenza di media multiccolinearità dal momento che vi sono coppie di regressori
-# Che presentano una collreazione positiva/negativa.
-# È quindi necessario utilizzare delle tecniche di regolarizzazione per ovviare a tale ostacolo.
+# Che presentano una correlazione positiva/negativa.
+# A tal proposito è necessario utilizzare delle tecniche di regolarizzazione.
 DataSet.cor = cor(DataSet)
 corrplot(DataSet.cor)
 DataSet.cor
@@ -415,8 +416,36 @@ male70output
 
 ################# Appendice 1 - Algorimo di ML #################
 
-# TODO Marco
+#Standardizzazione
 
+#la standardizzazione non è necessaria per i regressori con valori caratterizzati da una scala limitata
+x_toscale <- x[, c("age","trtbps","chol","thalachh","oldpeak")] #da standardizzare
+dropped <- x[, c("sex","cp","fbs","restecg","exng","slp","caa","thall")] #regressori da non standardizzare
+
+head(x_toscale)
+
+scaled_regressors <- scale(x_toscale) #standardizziamo
+
+head(scaled_regressors)
+
+cleaned_regressors <- cbind(scaled_regressors, dropped, label=y) #dataset completo standardizzato
+
+head(cleaned_regressors)
+
+#divisione in training set e test set
+index <- sample(1:nrow(cleaned_regressors), 0.7*nrow(cleaned_regressors))
+training_set <- cleaned_regressors[index,]
+y_training <- training_set[, "label"] #var dipendente training
+test_set <- cleaned_regressors[-index,]
+y_test <- test_set[, "label"] #var dipendente test
+test_set <- test_set[, -14] #eliminiamo la variabile dipendente dal test set 
+
+head(test_set)
+
+dim(training_set)
+dim(test_set)
+
+### WORKING IN PROGRESS... ###
 
 ################# Appendice 2 - La regressione Beta #################
 
