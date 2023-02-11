@@ -61,9 +61,9 @@ library(betareg)
 # Set del seme per evitare risultati diversi in run successivi
 set.seed(100)
 
-# https://DataSetw.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-data set
-#path<-paste(getwd(),"/Documenti/GitHub/ms-sl-2022/","dataset/heart.csv",sep = "",collapse=NULL)
-path<-paste(getwd(),"/dataset/heart.csv",sep = "",collapse=NULL)
+# https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset
+path<-paste(getwd(),"/Documenti/GitHub/ms-sl-2022/","dataset/heart.csv",sep = "",collapse=NULL)
+# path<-paste(getwd(),"/dataset/heart.csv",sep = "",collapse=NULL)
 DataSet<-read.csv(file=path, sep=",", header=TRUE)
 dim(DataSet)
 describe(DataSet)
@@ -148,45 +148,46 @@ DataSetForGraph=DataSetForGraph%>%mutate(number_of_vessel=recode(number_of_vesse
 ################# Istogrammi ################# 
 
 # Sex histogram
-ggplot(data=DataSetForGraph,aes(x=sex,fill=sex))+geom_bar()
+ggplot(data=DataSetForGraph,aes(x=sex,fill=sex)) + geom_bar() + ggtitle("Sex histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # Age histogram
-ggplot(data=DataSetForGraph,aes(x=age,fill=sex))+geom_histogram(col="black")
+ggplot(data=DataSetForGraph,aes(x=age,fill=sex)) + geom_histogram(col="black") + ggtitle("Age  histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # Chest pain histogram
-ggplot(data=DataSetForGraph,aes(x=chest_pain,fill=sex))+geom_bar()+theme(axis.text=element_text(size = 8))
+ggplot(data=DataSetForGraph,aes(x=chest_pain,fill=sex)) + geom_bar() + theme(axis.text=element_text(size = 8)) + ggtitle("Chest pain histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # Slope of the peak exercise ST segment histogram
-ggplot(data=DataSetForGraph,aes(x=peak_exercice_slope,fill=sex))+geom_bar()
+ggplot(data=DataSetForGraph,aes(x=peak_exercice_slope,fill=sex)) + geom_bar() + ggtitle("Slope of the peak exercise histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # Exercise induced angina histogram
-ggplot(data=DataSetForGraph,aes(x=exercise_induced_angina,fill=sex))+geom_bar()
+ggplot(data=DataSetForGraph,aes(x=exercise_induced_angina,fill=sex)) + geom_bar() + ggtitle("Exercise induced angina histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # Fast blood sugar histogram
-ggplot(data=DataSetForGraph,aes(x=fast_blood_sugar,fill=sex))+geom_bar()
+ggplot(data=DataSetForGraph,aes(x=fast_blood_sugar,fill=sex)) + geom_bar() + ggtitle("Fast blood sugar histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # Thalassemia (blood disorder) histogram
-ggplot(data=DataSetForGraph,aes(x=thalassemia,fill=sex))+geom_bar()
+ggplot(data=DataSetForGraph,aes(x=thalassemia,fill=sex)) + geom_bar() + ggtitle("Fast blood sugar histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # ECG result histogram
-ggplot(data=DataSetForGraph,aes(x=ecg_result,fill=sex))+geom_bar()
+ggplot(data=DataSetForGraph,aes(x=ecg_result,fill=sex)) + geom_bar() + ggtitle("ECG result histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # Number of free major heart vessels histogram
-ggplot(data=DataSetForGraph,aes(x=number_of_vessel,fill=sex))+geom_bar()
-
+ggplot(data=DataSetForGraph,aes(x=number_of_vessel,fill=sex)) + geom_bar() + ggtitle("Number of free vessels histogram") + theme(plot.title = element_text(hjust = 0.5))
+ 
 ################# Grafici per regressori continui ################# 
 
 # Regression plot for cholesterol and blood pressure
 plot_chol_bp=ggplot(data=DataSetForGraph,aes(x=cholestrol,y=blood_pressure,col=sex))+geom_point()+geom_smooth(method="lm",se=FALSE)
-ggarrange(plot_chol_bp,ncol=1,nrow=1)
+ggarrange(plot_chol_bp,ncol=1,nrow=1) + ggtitle("Regression plot: Cholestrol - Blood Pressure") + theme(plot.title = element_text(hjust = 0.5))
 
 # Regression plot for cholesterol and max heart rate achieved
 plot_chol_mhr=ggplot(data=DataSetForGraph,aes(x=cholestrol,y=max_heart_rate_achieved,col=sex))+geom_point()+geom_smooth(method="lm",se=FALSE)
-ggarrange(plot_chol_mhr,ncol=1,nrow=1)
+ggarrange(plot_chol_mhr,ncol=1,nrow=1) + ggtitle("Regression plot: Cholestrol - Max Heart Rate") + theme(plot.title = element_text(hjust = 0.5))
+
 
 # Regression plot for cholesterol and age
 plot_chol_age=ggplot(data=DataSetForGraph,aes(x=cholestrol,y=age,col=sex))+geom_point()+geom_smooth(method="lm",se=FALSE)
-ggarrange(plot_chol_age,ncol=1,nrow=1)
+ggarrange(plot_chol_age,ncol=1,nrow=1) + ggtitle("Regression plot: Cholestrol - Age") + theme(plot.title = element_text(hjust = 0.5))
 
 # Density plot of blood pressure
 ggplot(DataSetForGraph, aes(x=blood_pressure,fill=sex)) + geom_density() + ggtitle("Blood Pressure") + theme(plot.title = element_text(hjust = 0.5))
@@ -445,7 +446,7 @@ head(test_set)
 dim(training_set)
 dim(test_set)
 
-### WORKING IN PROGRESS... ###
+### WORKING IN PROGRESS... Daje! ###
 
 ################# Appendice 2 - La regressione Beta #################
 
@@ -469,7 +470,7 @@ dim(test_set)
 
 # Chance.of.Admit: Probability of student admission to the college
 
-# https://www.kaggle.com/code/malteshkumar/my-first-kernel-university-admit-percentage/data
+# https://www.kaggle.com/datasets/mohansacharya/graduate-admissions
 path2<-paste(getwd(),"/Documenti/GitHub/ms-sl-2022/","dataset/Admission_Predict.csv",sep = "",collapse=NULL)
 dataSetBeta<-read.csv(file=path2, sep=",", header=TRUE)
 attach(dataSetBeta)
@@ -485,19 +486,19 @@ sum(is.na(dataSetBeta))
 dataSetBetaForGraph=dataSetBeta%>%mutate(Research=recode(Research,"0"="No","1"="Yes"))
 
 # Istogramma ricerca si/no
-ggplot(dataSetBetaForGraph, aes(x=Research,fill=Research)) + geom_bar()
+ggplot(dataSetBetaForGraph, aes(x=Research,fill=Research)) + geom_bar() + ggtitle("Research histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # Istogramma rating universitario
-ggplot(dataSetBetaForGraph, aes(x=University.Rating,fill=Research)) + geom_bar()
+ggplot(dataSetBetaForGraph, aes(x=University.Rating,fill=Research)) + geom_bar() + ggtitle("University.Rating histogram") + theme(plot.title = element_text(hjust = 0.5))
 
 # Desnità score GRE
-ggplot(dataSetBetaForGraph, aes(x=GRE.Score,fill=Research)) + geom_density()
+ggplot(dataSetBetaForGraph, aes(x=GRE.Score,fill=Research)) + geom_density() + ggtitle("GRE Indicator density") + theme(plot.title = element_text(hjust = 0.5))
 
 # Desnità score esame TOEFL
-ggplot(dataSetBetaForGraph, aes(x=TOEFL.Score,fill=Research)) + geom_density()
+ggplot(dataSetBetaForGraph, aes(x=TOEFL.Score,fill=Research)) + geom_density() + ggtitle("TOEFL.Score Indicator density") + theme(plot.title = element_text(hjust = 0.5))
 
 # Desnità indicatore CGPA, overall academic performance of a student
-ggplot(dataSetBetaForGraph, aes(x=CGPA,fill=Research)) + geom_density()
+ggplot(dataSetBetaForGraph, aes(x=CGPA,fill=Research)) + geom_density() + ggtitle("CGPA Indicator density") + theme(plot.title = element_text(hjust = 0.5))
 
 ################# Stima di un modello di regressione Beta #################
 
