@@ -62,8 +62,8 @@ library(betareg)
 set.seed(100)
 
 # https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset
-path <- paste(getwd(), "/Documenti/GitHub/ms-sl-2022/", "dataset/heart.csv", sep = "", collapse = NULL)
-# path<-paste(getwd(), "/dataset/heart.csv", sep = "", collapse = NULL)
+#path <- paste(getwd(), "/Documenti/GitHub/ms-sl-2022/", "dataset/heart.csv", sep = "", collapse = NULL)
+path<-paste(getwd(), "/GitHub/ms-sl-2022/dataset/heart.csv", sep = "", collapse = NULL)
 DataSet <- read.csv(file = path, sep = ",", header = TRUE)
 dim(DataSet)
 describe(DataSet)
@@ -478,6 +478,10 @@ male70output
 
 
 ################# Appendice 1 - Algorimo di ML #################
+library(randomForest)
+library(caret)
+library(gbm)
+
 
 #Standardizzazione
 
@@ -499,6 +503,7 @@ head(cleaned_regressors)
 index <- sample(1:nrow(cleaned_regressors), 0.7*nrow(cleaned_regressors))
 training_set <- cleaned_regressors[index, ]
 y_training <- training_set[, "label"] #var dipendente training
+training_set <- training_set[,-14]
 test_set <- cleaned_regressors[-index, ]
 y_test <- test_set[, "label"] #var dipendente test
 test_set <- test_set[, -14] #eliminiamo la variabile dipendente dal test set 
@@ -508,7 +513,43 @@ head(test_set)
 dim(training_set)
 dim(test_set)
 
-### WORKING IN PROGRESS... Daje! ###
+summary(training_set)
+summary(test_set)
+
+############# RANDOM FOREST CLASSIFIER ################
+
+#rf_model = randomForest(training_set, y = y_training , ntree = 500, importance = TRUE)
+rf_model = randomForest(as.factor(y_training)~. , data = training_set, ntree =500, importance = TRUE)
+
+
+importance <- importance(rf_model)
+
+varImportance <- data.frame(Variables = row.names(importance), 
+                            Importance = round(importance[ ,'MeanDecreaseGini'],2))
+
+# Create a rank variable based on importance
+rankImportance <- varImportance %>%
+  mutate(Rank = paste0('#',dense_rank(desc(Importance))))
+
+# Use ggplot2 to visualize the relative importance of variables
+ggplot(rankImportance, aes(x = reorder(Variables, Importance), 
+                           y = Importance, fill = Importance)) +
+  geom_bar(stat='identity') + 
+  geom_text(aes(x = Variables, y = 0.5, label = Rank),
+            hjust=0, vjust=0.55, size = 4, colour = 'red') +
+  labs(x = 'Variables') +
+  coord_flip() + 
+  theme_classic()
+
+
+plot(rf_model, ylim=c(0,0.36), xlim=c(0,140))
+legend('topright', colnames(rf_model$err.rate), col=1:3, fill=1:3)
+
+predictions <- predict(rf_model, newdata = test_set)
+
+cm2<-confusionMatrix(predictions, as.factor(y_test))
+cm2
+
 
 ################# Appendice 2 - La regressione Beta #################
 
