@@ -63,7 +63,7 @@ set.seed(100)
 
 # https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset
 #path <- paste(getwd(), "/Documenti/GitHub/ms-sl-2022/", "dataset/heart.csv", sep = "", collapse = NULL)
-path<-paste(getwd(), "/GitHub/ms-sl-2022/dataset/heart.csv", sep = "", collapse = NULL)
+path<-paste(getwd(), "/dataset/heart.csv", sep = "", collapse = NULL)
 DataSet <- read.csv(file = path, sep = ",", header = TRUE)
 dim(DataSet)
 describe(DataSet)
@@ -482,12 +482,19 @@ library(randomForest)
 library(caret)
 library(gbm)
 
+set.seed(100)
+
+x <- DataSet
 
 #Standardizzazione
 
 #la standardizzazione non è necessaria per i regressori con valori caratterizzati da una scala limitata
-x_toscale <- x[, c("age", "trtbps", "chol", "thalachh", "oldpeak")] #da standardizzare
-dropped <- x[,  c("sex", "cp", "fbs", "restecg", "exng", "slp", "caa", "thall")] #regressori da non standardizzare
+#regressori da standardizzare
+x_toscale <- x[, c("age", "trtbps", "chol", "thalachh", "oldpeak")]
+#regressori da non standardizzare
+dropped <- x[,  c("sex", "cp", "fbs", "restecg", "exng", "slp", "caa", "thall")]
+
+head(dropped)
 
 head(x_toscale)
 
@@ -495,7 +502,7 @@ scaled_regressors <- scale(x_toscale) #standardizziamo
 
 head(scaled_regressors)
 
-cleaned_regressors <- cbind(scaled_regressors, dropped, label = y) #dataset completo standardizzato
+cleaned_regressors <- cbind(scaled_regressors, dropped, label = x$output) #dataset completo standardizzato
 
 head(cleaned_regressors)
 
@@ -518,37 +525,41 @@ summary(test_set)
 
 ############# RANDOM FOREST CLASSIFIER ################
 
-#rf_model = randomForest(training_set, y = y_training , ntree = 500, importance = TRUE)
-rf_model = randomForest(as.factor(y_training)~. , data = training_set, ntree =500, importance = TRUE)
 
+rf_model = randomForest(as.factor(y_training)~. , data = training_set, ntree =450, importance = TRUE)
 
+# Classifica di importanza dei vari regressori ai fini della predizione
 importance <- importance(rf_model)
 
 varImportance <- data.frame(Variables = row.names(importance), 
                             Importance = round(importance[ ,'MeanDecreaseGini'],2))
 
-# Create a rank variable based on importance
 rankImportance <- varImportance %>%
   mutate(Rank = paste0('#',dense_rank(desc(Importance))))
 
-# Use ggplot2 to visualize the relative importance of variables
+# Visualizziamo il tutto con ggplot
 ggplot(rankImportance, aes(x = reorder(Variables, Importance), 
                            y = Importance, fill = Importance)) +
   geom_bar(stat='identity') + 
   geom_text(aes(x = Variables, y = 0.5, label = Rank),
             hjust=0, vjust=0.55, size = 4, colour = 'red') +
-  labs(x = 'Variables') +
+  labs(x = 'Regressors') +
   coord_flip() + 
   theme_classic()
 
-
-plot(rf_model, ylim=c(0,0.36), xlim=c(0,140))
-legend('topright', colnames(rf_model$err.rate), col=1:3, fill=1:3)
 
 predictions <- predict(rf_model, newdata = test_set)
 
 cm2<-confusionMatrix(predictions, as.factor(y_test))
 cm2
+
+
+plot(rf_model, ylim=c(0,0.50), xlim=c(0,450))
+legend('topright', colnames(rf_model$err.rate), col=1:3, fill=1:3)
+
+
+plot(rf_model, ylim=c(0,0.50), xlim=c(0,140))
+legend('topright', colnames(rf_model$err.rate), col=1:3, fill=1:3)
 
 
 ################# Appendice 2 - La regressione Beta #################
