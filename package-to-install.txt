@@ -1,0 +1,12 @@
+/etc/src/sorces.list -> add
+	deb http://security.ubuntu.com/ubuntu focal-security main 
+
+install:
+	sudo apt install libssl
+	sudo apt-get install libpng-dev
+	sudo apt-get install zlib1g-dev
+	sudo apt-get install libblas-dev liblapack-dev
+	sudo apt-get install gfortran
+	sudo apt install libjpeg-turbo8
+	sudo apt install libjpeg-turbo8-dev
+	sudo apt install libjpeg-turbo8-dbg
