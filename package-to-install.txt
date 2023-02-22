@@ -10,3 +10,4 @@ install:
 	sudo apt install libjpeg-turbo8
 	sudo apt install libjpeg-turbo8-dev
 	sudo apt install libjpeg-turbo8-dbg
+	sudo apt install cmake
