@@ -62,8 +62,8 @@ library(betareg)
 set.seed(100)
 
 # https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset
-#path <- paste(getwd(), "/Documenti/GitHub/ms-sl-2022/", "dataset/heart.csv", sep = "", collapse = NULL)
-path<-paste(getwd(), "/dataset/heart.csv", sep = "", collapse = NULL)
+path <- paste(getwd(), "/Documenti/GitHub/ms-sl-2022/", "dataset/heart.csv", sep = "", collapse = NULL)
+#path<-paste(getwd(), "/dataset/heart.csv", sep = "", collapse = NULL)
 DataSet <- read.csv(file = path, sep = ",", header = TRUE)
 dim(DataSet)
 describe(DataSet)
